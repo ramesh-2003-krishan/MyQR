@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QR Scan Analytics Dashboard</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
   <style>
     :root {
       --bg-dark: #0a0b10;
@@ -15,6 +17,8 @@
       --primary: #6366f1;
       --primary-glow: rgba(99, 102, 241, 0.15);
       --pulse-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      --warning: #f59e0b;
+      --warning-glow: rgba(245, 158, 11, 0.1);
     }
 
     * {
@@ -26,7 +30,7 @@
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--bg-dark);
-      background-image: 
+      background-image:
         radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.05) 0%, transparent 40%),
         radial-gradient(circle at 90% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 40%);
       color: var(--text-main);
@@ -48,6 +52,12 @@
       padding-bottom: 1.5rem;
     }
 
+    .title-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
     h1 {
       font-size: 1.75rem;
       font-weight: 700;
@@ -55,6 +65,28 @@
       background: var(--pulse-gradient);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+    }
+
+    .mode-badge {
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .mode-badge.demo {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      box-shadow: 0 4px 12px var(--warning-glow);
+    }
+
+    .mode-badge.live {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.2);
     }
 
     .refresh-btn {
@@ -82,6 +114,53 @@
       transform: translateY(0);
     }
 
+    /* Warning setup card */
+    .setup-guide {
+      background: rgba(245, 158, 11, 0.03);
+      border: 1px solid rgba(245, 158, 11, 0.15);
+      border-radius: 20px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      display: none;
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.02);
+    }
+
+    .setup-guide h3 {
+      color: var(--warning);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .setup-guide p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .steps-list {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .steps-list li {
+      font-size: 0.875rem;
+      color: var(--text-main);
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .steps-list li::before {
+      content: '✓';
+      color: var(--warning);
+      font-weight: bold;
+    }
+
     /* Stats Grid */
     .grid {
       display: grid;
@@ -99,7 +178,7 @@
       padding: 1.75rem;
       position: relative;
       overflow: hidden;
-      transition: border-color 0.3s;
+      transition: border-color 0.3s, transform 0.3s;
     }
 
     .card::before {
@@ -115,6 +194,7 @@
 
     .card:hover {
       border-color: rgba(99, 102, 241, 0.3);
+      transform: translateY(-2px);
     }
 
     .card.primary-card {
@@ -199,9 +279,17 @@
       transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .fill-2 { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
-    .fill-5 { background: linear-gradient(90deg, #6366f1, #a855f7); }
-    .fill-10 { background: linear-gradient(90deg, #ec4899, #f43f5e); }
+    .fill-2 {
+      background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    }
+
+    .fill-5 {
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+    }
+
+    .fill-10 {
+      background: linear-gradient(90deg, #ec4899, #f43f5e);
+    }
 
     /* Loading Overlay */
     .loading-overlay {
@@ -228,22 +316,14 @@
       animation: spin 1s infinite linear;
     }
 
-    .error-banner {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.2);
-      color: #fca5a5;
-      padding: 1rem;
-      border-radius: 12px;
-      margin-bottom: 2rem;
-      display: none;
-      font-size: 0.95rem;
-    }
-
     @keyframes spin {
-      100% { transform: rotate(360deg); }
+      100% {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
+
 <body>
   <div id="loading" class="loading-overlay">
     <div class="spinner"></div>
@@ -251,14 +331,33 @@
 
   <div class="container">
     <header>
-      <h1>Analytics Dashboard</h1>
+      <div class="title-area">
+        <h1>Analytics Dashboard</h1>
+        <span id="mode-badge" class="mode-badge demo">Demo Mode</span>
+      </div>
       <button class="refresh-btn" onclick="fetchStats()">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+        </svg>
         Refresh
       </button>
     </header>
 
-    <div id="error" class="error-banner"></div>
+    <!-- Setup Guide warning card (only visible if KV is missing) -->
+    <div id="setup-guide" class="setup-guide">
+      <h3>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Database Connection Required
+      </h3>
+      <p>The dashboard is currently running in <strong>Demo Mode</strong> with mock stats because Vercel KV is not connected to this project yet. To capture live scans, follow these clicks:</p>
+      <ul class="steps-list">
+        <li>Go to your project page in the <strong>Vercel Dashboard</strong>.</li>
+        <li>Click the <strong>Storage</strong> tab at the top.</li>
+        <li>Click <strong>Create Database</strong> -> Select <strong>KV (Redis)</strong>.</li>
+        <li>Click <strong>Connect</strong> to link the KV store to your project.</li>
+      </ul>
+    </div>
 
     <div class="grid">
       <div class="card primary-card">
@@ -281,7 +380,7 @@
 
     <div class="chart-section">
       <div class="chart-title">Scans Distribution</div>
-      
+
       <div class="distribution-row">
         <div class="distribution-info">
           <span class="level-label">2 Points QR Code</span>
@@ -315,51 +414,54 @@
   </div>
 
   <script>
+    // Demo Mock Data to show if API fails
+    const mockData = {
+      total: 145,
+      scan_2: 48,
+      scan_5: 67,
+      scan_10: 30
+    };
+
     async function fetchStats() {
       const loader = document.getElementById('loading');
-      const errBanner = document.getElementById('error');
+      const setupGuide = document.getElementById('setup-guide');
+      const modeBadge = document.getElementById('mode-badge');
       
       loader.style.opacity = '1';
       loader.style.display = 'flex';
-      errBanner.style.display = 'none';
+      setupGuide.style.display = 'none';
 
       try {
         const response = await fetch('/api/stats');
+        
+        let data;
         if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || `HTTP error! status: ${response.status}`);
+          throw new Error('Database not configured');
         }
         
-        const data = await response.json();
+        data = await response.json();
         
-        // Update raw numbers
-        document.getElementById('val-total').innerText = data.total;
-        document.getElementById('val-2').innerText = data.scan_2;
-        document.getElementById('val-5').innerText = data.scan_5;
-        document.getElementById('val-10').innerText = data.scan_10;
+        // If the DB returns empty or error messages
+        if (data.error) {
+          throw new Error(data.error);
+        }
 
-        // Calculate distributions
-        const total = data.total || 0;
-        const pct2 = total > 0 ? Math.round((data.scan_2 / total) * 100) : 0;
-        const pct5 = total > 0 ? Math.round((data.scan_5 / total) * 100) : 0;
-        const pct10 = total > 0 ? Math.round((data.scan_10 / total) * 100) : 0;
-
-        // Update levels count details
-        document.getElementById('label-2').innerText = `${data.scan_2} scans (${pct2}%)`;
-        document.getElementById('label-5').innerText = `${data.scan_5} scans (${pct5}%)`;
-        document.getElementById('label-10').innerText = `${data.scan_10} scans (${pct10}%)`;
-
-        // Update progress bar widths
-        document.getElementById('bar-2').style.width = `${pct2}%`;
-        document.getElementById('bar-5').style.width = `${pct5}%`;
-        document.getElementById('bar-10').style.width = `${pct10}%`;
+        // Live stats configured successfully!
+        modeBadge.innerText = 'Live Mode';
+        modeBadge.className = 'mode-badge live';
+        setupGuide.style.display = 'none';
+        renderData(data);
 
       } catch (error) {
-        console.error('Fetcher stats error:', error);
-        errBanner.innerText = `Error: ${error.message}`;
-        errBanner.style.display = 'block';
+        console.warn('Redirecting to demo mode due to connection error:', error);
+        
+        // Show setup banner and load gorgeous mock data
+        modeBadge.innerText = 'Demo Mode';
+        modeBadge.className = 'mode-badge demo';
+        setupGuide.style.display = 'block';
+        renderData(mockData);
+
       } finally {
-        // Smooth transition out
         setTimeout(() => {
           loader.style.opacity = '0';
           setTimeout(() => {
@@ -369,8 +471,33 @@
       }
     }
 
+    function renderData(data) {
+      // Update counts
+      document.getElementById('val-total').innerText = data.total;
+      document.getElementById('val-2').innerText = data.scan_2;
+      document.getElementById('val-5').innerText = data.scan_5;
+      document.getElementById('val-10').innerText = data.scan_10;
+
+      // Calculate percentages
+      const total = data.total || 0;
+      const pct2 = total > 0 ? Math.round((data.scan_2 / total) * 100) : 0;
+      const pct5 = total > 0 ? Math.round((data.scan_5 / total) * 100) : 0;
+      const pct10 = total > 0 ? Math.round((data.scan_10 / total) * 100) : 0;
+
+      // Update labels
+      document.getElementById('label-2').innerText = `${data.scan_2} scans (${pct2}%)`;
+      document.getElementById('label-5').innerText = `${data.scan_5} scans (${pct5}%)`;
+      document.getElementById('label-10').innerText = `${data.scan_10} scans (${pct10}%)`;
+
+      // Update progress bar widths
+      document.getElementById('bar-2').style.width = `${pct2}%`;
+      document.getElementById('bar-5').style.width = `${pct5}%`;
+      document.getElementById('bar-10').style.width = `${pct10}%`;
+    }
+
     // Initial load
     window.addEventListener('DOMContentLoaded', fetchStats);
   </script>
 </body>
+
 </html>
