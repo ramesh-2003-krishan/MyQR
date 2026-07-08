@@ -21,7 +21,7 @@ import com.sun.net.httpserver.HttpServer;
 public class LoveQRCode {
     public static void main(String[] args) throws Exception {
         Path projectRoot = Path.of("").toAbsolutePath().normalize();
-        Path htmlPath = projectRoot.resolve("photo.html");
+        Path htmlPath = projectRoot.resolve("index.html");
         Path imagePath = projectRoot.resolve("dengue.jpeg");
         if (!Files.exists(imagePath)) {
             imagePath = projectRoot.resolve("src").resolve("dengue.jpeg");
@@ -29,6 +29,7 @@ public class LoveQRCode {
 
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext("/", exchange -> redirectToPhoto(exchange));
+        server.createContext("/index.html", new FileHandler(htmlPath, "text/html; charset=utf-8"));
         server.createContext("/photo.html", new FileHandler(htmlPath, "text/html; charset=utf-8"));
         server.createContext("/dengue.jpeg", new FileHandler(imagePath, "image/jpeg"));
         server.createContext("/src/dengue.jpeg", new FileHandler(imagePath, "image/jpeg"));
@@ -37,7 +38,7 @@ public class LoveQRCode {
 
         int port = server.getAddress().getPort();
         String hostAddress = findLocalIp().orElse("127.0.0.1");
-        String localUrl = "http://" + hostAddress + ":" + port + "/photo.html";
+        String localUrl = "http://" + hostAddress + ":" + port + "/index.html";
 
         System.out.println("Local Server running at: " + localUrl);
         System.out.print("Enter your Vercel deployed URL (leave empty and press Enter to use local URL instead): ");
@@ -71,7 +72,7 @@ public class LoveQRCode {
     }
 
     private static void redirectToPhoto(HttpExchange exchange) throws IOException {
-        exchange.getResponseHeaders().add("Location", "/photo.html");
+        exchange.getResponseHeaders().add("Location", "/index.html");
         exchange.sendResponseHeaders(302, -1);
         exchange.close();
     }

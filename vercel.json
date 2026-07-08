@@ -1,7 +1,7 @@
 {
   "cleanUrls": true,
-  "rewrites": [
-    { "source": "/", "destination": "/photo.html" }
+  "redirects": [
+    { "source": "/photo.html", "destination": "/", "permanent": true }
   ]
 }
 
