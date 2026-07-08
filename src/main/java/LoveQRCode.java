@@ -58,16 +58,31 @@ public class LoveQRCode {
 
         int width = 300;
         int height = 300;
-
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(pageUrl, BarcodeFormat.QR_CODE, width, height);
-
-        Path qrPath = Path.of("photo_qr.png");
-        MatrixToImageWriter.writeToPath(bitMatrix, "PNG", qrPath);
+        int[] pointsLevels = {2, 5, 10};
 
         System.out.println("\n------------------------------------------------");
-        System.out.println("QR code successfully generated for: " + pageUrl);
-        System.out.println("QR code saved at: " + qrPath.toAbsolutePath());
+        for (int p : pointsLevels) {
+            String targetUrl = pageUrl;
+            if (targetUrl.contains("?")) {
+                targetUrl += "&points=" + p;
+            } else {
+                targetUrl += "?points=" + p;
+            }
+
+            BitMatrix bitMatrix = qrCodeWriter.encode(targetUrl, BarcodeFormat.QR_CODE, width, height);
+            Path qrPath = Path.of("photo_qr_" + p + ".png");
+            MatrixToImageWriter.writeToPath(bitMatrix, "PNG", qrPath);
+
+            System.out.println("QR code (" + p + " points) generated for: " + targetUrl);
+            System.out.println("Saved at: " + qrPath.toAbsolutePath());
+
+            if (p == 2) {
+                // Keep the default photo_qr.png updated as well
+                Path legacyPath = Path.of("photo_qr.png");
+                MatrixToImageWriter.writeToPath(bitMatrix, "PNG", legacyPath);
+            }
+        }
         System.out.println("------------------------------------------------\n");
         System.out.println("Press Enter in the console to stop the local server.");
 

@@ -16,9 +16,19 @@
   <div class="page">
     <div class="card">
       <h1>Congratulations!</h1>
-      <p>You got 2 Marks.</p>
+      <p id="marks-text">You got 2 Marks.</p>
       <img src="dengue.jpeg" alt="Photo" />
     </div>
   </div>
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const points = urlParams.get('points');
+    const marks = urlParams.get('marks');
+    if (points) {
+      document.getElementById('marks-text').textContent = `You got ${points} Points.`;
+    } else if (marks) {
+      document.getElementById('marks-text').textContent = `You got ${marks} Marks.`;
+    }
+  </script>
 </body>
 </html>
