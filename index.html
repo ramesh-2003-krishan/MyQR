@@ -26,8 +26,10 @@
     const marks = urlParams.get('marks');
     if (points) {
       document.getElementById('marks-text').textContent = `You got ${points} Points.`;
+      fetch(`/api/track-scan?points=${points}`).catch(err => console.error('Analytics failed:', err));
     } else if (marks) {
       document.getElementById('marks-text').textContent = `You got ${marks} Marks.`;
+      fetch(`/api/track-scan?points=${marks}`).catch(err => console.error('Analytics failed:', err));
     }
   </script>
 </body>

@@ -46,7 +46,7 @@ public class LoveQRCode {
         } else {
             System.out.println("Local Server running at: " + localUrl);
             System.out.print("Enter your Vercel deployed URL (leave empty and press Enter to use local URL instead): ");
-            
+
             java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
             String inputLine = reader.readLine();
             if (inputLine == null || inputLine.trim().isEmpty()) {
@@ -59,7 +59,7 @@ public class LoveQRCode {
         int width = 300;
         int height = 300;
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        int[] pointsLevels = {2, 5, 10};
+        int[] pointsLevels = { 2, 5, 10 };
 
         System.out.println("\n------------------------------------------------");
         for (int p : pointsLevels) {
@@ -78,7 +78,7 @@ public class LoveQRCode {
             System.out.println("Saved at: " + qrPath.toAbsolutePath());
 
             if (p == 2) {
-                // Keep the default photo_qr.png updated as well
+
                 Path legacyPath = Path.of("photo_qr.png");
                 MatrixToImageWriter.writeToPath(bitMatrix, "PNG", legacyPath);
             }
