@@ -40,16 +40,20 @@ public class LoveQRCode {
         String hostAddress = findLocalIp().orElse("127.0.0.1");
         String localUrl = "http://" + hostAddress + ":" + port + "/index.html";
 
-        System.out.println("Local Server running at: " + localUrl);
-        System.out.print("Enter your Vercel deployed URL (leave empty and press Enter to use local URL instead): ");
-        
-        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
-        String inputLine = reader.readLine();
         String pageUrl;
-        if (inputLine == null || inputLine.trim().isEmpty()) {
-            pageUrl = localUrl;
+        if (args.length > 0 && args[0] != null && !args[0].trim().isEmpty()) {
+            pageUrl = args[0].trim();
         } else {
-            pageUrl = inputLine.trim();
+            System.out.println("Local Server running at: " + localUrl);
+            System.out.print("Enter your Vercel deployed URL (leave empty and press Enter to use local URL instead): ");
+            
+            java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
+            String inputLine = reader.readLine();
+            if (inputLine == null || inputLine.trim().isEmpty()) {
+                pageUrl = localUrl;
+            } else {
+                pageUrl = inputLine.trim();
+            }
         }
 
         int width = 300;
