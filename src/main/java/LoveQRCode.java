@@ -22,18 +22,34 @@ public class LoveQRCode {
     public static void main(String[] args) throws Exception {
         Path projectRoot = Path.of("").toAbsolutePath().normalize();
         Path htmlPath = projectRoot.resolve("photo.html");
-        Path imagePath = projectRoot.resolve("src").resolve("dengue.jpeg");
+        Path imagePath = projectRoot.resolve("dengue.jpeg");
+        if (!Files.exists(imagePath)) {
+            imagePath = projectRoot.resolve("src").resolve("dengue.jpeg");
+        }
 
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
         server.createContext("/", exchange -> redirectToPhoto(exchange));
         server.createContext("/photo.html", new FileHandler(htmlPath, "text/html; charset=utf-8"));
+        server.createContext("/dengue.jpeg", new FileHandler(imagePath, "image/jpeg"));
         server.createContext("/src/dengue.jpeg", new FileHandler(imagePath, "image/jpeg"));
         server.setExecutor(null);
         server.start();
 
         int port = server.getAddress().getPort();
         String hostAddress = findLocalIp().orElse("127.0.0.1");
-        String pageUrl = "http://" + hostAddress + ":" + port + "/photo.html";
+        String localUrl = "http://" + hostAddress + ":" + port + "/photo.html";
+
+        System.out.println("Local Server running at: " + localUrl);
+        System.out.print("Enter your Vercel deployed URL (leave empty and press Enter to use local URL instead): ");
+        
+        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
+        String inputLine = reader.readLine();
+        String pageUrl;
+        if (inputLine == null || inputLine.trim().isEmpty()) {
+            pageUrl = localUrl;
+        } else {
+            pageUrl = inputLine.trim();
+        }
 
         int width = 300;
         int height = 300;
@@ -44,10 +60,11 @@ public class LoveQRCode {
         Path qrPath = Path.of("photo_qr.png");
         MatrixToImageWriter.writeToPath(bitMatrix, "PNG", qrPath);
 
-        System.out.println("Server running at: " + pageUrl);
+        System.out.println("\n------------------------------------------------");
+        System.out.println("QR code successfully generated for: " + pageUrl);
         System.out.println("QR code saved at: " + qrPath.toAbsolutePath());
-        System.out.println("Scan the QR code from a device on the same network.");
-        System.out.println("Press Enter to stop the server.");
+        System.out.println("------------------------------------------------\n");
+        System.out.println("Press Enter in the console to stop the local server.");
 
         System.in.read();
         server.stop(0);
