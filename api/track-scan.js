@@ -1,3 +1,19 @@
+import { createClient } from 'redis';
+
+let redisClient;
+
+async function getClient() {
+  if (!redisClient) {
+    redisClient = createClient({
+      url: process.env.REDIS_URL
+    });
+    // Quietly log error events to prevent crash
+    redisClient.on('error', (err) => console.error('Redis Client Error', err));
+    await redisClient.connect();
+  }
+  return redisClient;
+}
+
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -24,23 +40,30 @@ export default async function handler(req, res) {
     const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
     const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
 
-    if (!redisUrl || !redisToken) {
+    if (redisUrl && redisToken) {
+      // Option A: Use performance HTTP REST (if variables exist)
+      await Promise.all([
+        fetch(`${redisUrl}/incr/scan_points_${pStr}`, {
+          headers: { Authorization: `Bearer ${redisToken}` }
+        }),
+        fetch(`${redisUrl}/incr/scan_total`, {
+          headers: { Authorization: `Bearer ${redisToken}` }
+        })
+      ]);
+      return res.status(200).json({ success: true });
+    } else if (process.env.REDIS_URL) {
+      // Option B: TCP connection fallback utilizing redis client wrapper
+      const client = await getClient();
+      await Promise.all([
+        client.incr(`scan_points_${pStr}`),
+        client.incr('scan_total')
+      ]);
+      return res.status(200).json({ success: true });
+    } else {
       return res.status(500).json({
-        error: 'Vercel KV is not configured. Please create a KV database in the Storage tab on Vercel and connect it to this project.'
+        error: 'Vercel KV or REDIS_URL environment variables are not configured in Vercel Storage integration.'
       });
     }
-
-    // Increment points count and total count in parallel using Upstash REST API
-    await Promise.all([
-      fetch(`${redisUrl}/incr/scan_points_${pStr}`, {
-        headers: { Authorization: `Bearer ${redisToken}` }
-      }),
-      fetch(`${redisUrl}/incr/scan_total`, {
-        headers: { Authorization: `Bearer ${redisToken}` }
-      })
-    ]);
-
-    return res.status(200).json({ success: true });
   } catch (error) {
     return res.status(500).json({ error: error.message });
   }
